@@ -1,0 +1,238 @@
+ESP32-S3 CNC PENDANT UI - COMPLETE PROJECT STRUCTURE
+=====================================================
+
+ESP32-Pendant-UI/
+│
+├── Configuration Files
+│   ├── .gitignore                    # Git ignore patterns
+│   ├── platformio.ini                # PlatformIO project config (ESP32-S3, LVGL)
+│   └── README.md                     # Main project documentation
+│   └── STRUCTURE.md                  # Detailed structure documentation
+│
+├── include/                          # Public headers
+│   ├── lv_conf.h                    # LVGL 8.3 configuration
+│   └── ui_api.h                     # Public UI API (screens, callbacks, updates)
+│
+├── src/                              # Application source
+│   ├── main.cpp                     # Entry point, LVGL init, hardware setup
+│   └── ui_api.c                     # Public API implementation
+│
+├── ui/                               # User Interface
+│   │
+│   ├── xml/                         # XML UI Definitions (LVGL Editor format)
+│   │   ├── README.md               # XML format documentation
+│   │   ├── project.xml             # Project config (480x480 round display)
+│   │   ├── globals.xml             # Colors, styles, fonts, API enums
+│   │   │
+│   │   ├── screens/                # Screen definitions
+│   │   │   ├── main.xml           # Main jog/DRO screen (X/Y/Z positions)
+│   │   │   ├── macros.xml         # Macro commands (HOME, PROBE, ZERO, etc.)
+│   │   │   └── setup.xml          # Settings (speed, feed, brightness)
+│   │   │
+│   │   └── components/            # Reusable components (future use)
+│   │
+│   └── generated/                  # Auto-generated C code
+│       ├── README.md              # Generation instructions
+│       ├── main_screen_gen.h/c    # Main screen implementation
+│       ├── macros_screen_gen.h/c  # Macros screen implementation
+│       └── setup_screen_gen.h/c   # Setup screen implementation
+│
+├── scripts/                         # Build tools
+│   └── xml_to_c.py                 # XML→C code generator (stub)
+│
+├── fonts/                           # Custom fonts (empty, for future)
+├── images/                          # Icons/images (empty, for future)
+└── lib/                             # Additional libraries (empty)
+
+
+KEY FEATURES
+============
+
+✅ Round 480x480 Touch LCD Support
+✅ Rotary Encoder Input Navigation
+✅ Three Main Screens (Main/Macros/Setup)
+✅ XML-based UI Definitions
+✅ Public API for CNC Integration
+✅ Generated C Code Structure
+✅ LVGL 8.3 Framework
+✅ PlatformIO Build System
+✅ NO Machine Control Logic (Pure UI)
+
+
+SCREENS OVERVIEW
+================
+
+1. MAIN SCREEN (main.xml)
+   - Digital Read Out (DRO) for X, Y, Z axes
+   - Real-time position display
+   - ZERO and MACRO buttons
+   - Status bar with connection info
+   - Dark theme with green accents
+
+2. MACROS SCREEN (macros.xml)
+   - 6 macro buttons in 3x2 grid:
+     • PROBE Z - Touch probe Z axis
+     • HOME ALL - Home all axes
+     • ZERO XY - Zero X and Y coordinates
+     • ZERO Z - Zero Z coordinate
+     • GOTO ZERO - Return to zero position
+     • UNLOCK - Unlock machine
+   - BACK button to return
+   - Status bar
+
+3. SETUP SCREEN (setup.xml)
+   - Jog Speed slider (1-100%)
+   - Feed Override slider (10-200%)
+   - Display Brightness slider
+   - Connection status indicator
+   - SAVE and BACK buttons
+   - Status bar
+
+
+PUBLIC API SUMMARY
+==================
+
+Initialization:
+  • ui_init() - Initialize UI system
+  • ui_update() - Call in main loop
+
+Screen Control:
+  • ui_load_screen(screen) - Switch screens
+  • ui_get_current_screen() - Get current screen
+
+Position Updates:
+  • ui_update_position(axis, pos) - Update single axis
+  • ui_update_all_positions(x,y,z,a) - Update all at once
+
+Status & Display:
+  • ui_set_status_message(msg) - Update status text
+  • ui_set_connection_status(bool) - Show connection state
+  • ui_set_spindle_rpm(rpm) - Update spindle display
+  • ui_set_feed_override(%) - Update feed override
+
+Callbacks:
+  • ui_set_macro_callback(cb) - Handle macro buttons
+  • ui_set_settings_save_callback(cb) - Handle settings save
+  • ui_set_screen_change_callback(cb) - Track screen changes
+
+Input:
+  • ui_encoder_input(delta) - Process encoder rotation
+  • ui_encoder_button_pressed() - Process encoder click
+
+
+HARDWARE CONFIGURATION
+======================
+
+MCU: ESP32-S3 DevKitC-1
+Display: 480x480 round touch LCD
+Input: Rotary encoder with button
+
+Pin Configuration (edit in main.cpp):
+  • TOUCH_CS_PIN = 21
+  • TOUCH_IRQ_PIN = 22
+  • ENCODER_CLK_PIN = 32
+  • ENCODER_DT_PIN = 33
+  • ENCODER_SW_PIN = 25
+  • BACKLIGHT_PIN = 27
+
+
+DEPENDENCIES
+============
+
+PlatformIO Libraries:
+  • lvgl/lvgl@^8.3.0
+  • bodmer/TFT_eSPI@^2.5.0
+
+Build Tools:
+  • PlatformIO Core
+  • Python 3.6+ (for xml_to_c.py)
+  • ESP32 toolchain (auto-installed)
+
+
+QUICK START
+===========
+
+1. Install PlatformIO
+2. Open project in VS Code or use CLI
+3. Configure hardware pins in src/main.cpp
+4. Build: pio run
+5. Upload: pio run --target upload
+6. Monitor: pio device monitor
+
+
+USAGE EXAMPLE
+=============
+
+#include "ui_api.h"
+
+void setup() {
+    ui_init();
+    ui_set_macro_callback(my_macro_handler);
+    ui_load_screen(UI_SCREEN_MAIN);
+}
+
+void loop() {
+    ui_update(5);
+    
+    // Update from CNC controller
+    ui_update_all_positions("123.456", "78.901", "23.456", NULL);
+    ui_set_status_message("Machining...");
+    
+    delay(5);
+}
+
+void my_macro_handler(const char * macro_name) {
+    if(strcmp(macro_name, "HOME_ALL") == 0) {
+        // Send home command to CNC controller
+    }
+}
+
+
+FILE COUNTS
+===========
+
+Total Files: 22
+
+Configuration:  2 files
+Headers:        4 files  
+Source:         4 files
+XML:            5 files
+Scripts:        1 file
+Documentation:  4 files
+README files:   2 files
+
+
+PROJECT STATUS
+==============
+
+✅ Complete directory structure
+✅ PlatformIO configuration ready
+✅ LVGL configuration complete
+✅ Three screens fully defined in XML
+✅ Generated C code stubs ready
+✅ Public API documented and implemented
+✅ Main application with LVGL init
+✅ Rotary encoder support
+✅ Touch LCD support framework
+✅ XML to C generator stub
+✅ Comprehensive documentation
+
+
+NOTES
+=====
+
+• This is a UI-ONLY project (no machine control logic)
+• Display and touch drivers need hardware-specific implementation
+• XML generator is a stub (see LVGL Editor for full implementation)
+• Generated C files are hand-written examples showing structure
+• Ready for integration with CNC controller via public API
+
+
+REFERENCES
+==========
+
+LVGL: https://docs.lvgl.io/
+LVGL Editor: https://github.com/lvgl/lvgl_editor
+PlatformIO: https://docs.platformio.org/
+ESP32-S3: https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/
+
