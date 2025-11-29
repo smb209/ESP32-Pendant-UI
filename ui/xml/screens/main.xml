@@ -1,0 +1,82 @@
+<screen name="main">
+	<styles>
+		<style name="style_dro_panel" 
+			   bg_color="#secondary_bg" 
+			   border_width="2" 
+			   border_color="#accent_color" 
+			   radius="#unit_md" 
+			   pad_all="#unit_lg" />
+		
+		<style name="style_axis_label" 
+			   text_color="#text_secondary" 
+			   text_font="montserrat_14" />
+		
+		<style name="style_position_value" 
+			   text_color="#accent_color" 
+			   text_font="montserrat_20" />
+	</styles>
+	
+	<view flex_flow="column" width="100%" height="100%">
+		<!-- Apply base screen style -->
+		<style name="style_screen_base" />
+		
+		<!-- Header with status -->
+		<div width="100%" height="60" style_pad_all="#unit_md">
+			<style name="style_panel" />
+			<lv_label text="CNC Pendant - JOG MODE" align="center" />
+		</div>
+		
+		<!-- Digital Read Out (DRO) Display -->
+		<div flex_grow="1" width="100%" style_pad_all="#unit_md">
+			<view flex_flow="column" width="100%" style_flex_cross_place="center">
+				
+				<!-- X Axis Position -->
+				<div width="90%" height="60" style_pad_all="#unit_md" style_margin_bottom="#unit_sm">
+					<style name="style_dro_panel" />
+					<view flex_flow="row" width="100%" style_flex_main_place="space-between">
+						<lv_label text="X:" style_text_color="#text_secondary" />
+						<lv_label text="$pos_x" style_text_color="#accent_color" />
+					</view>
+				</div>
+				
+				<!-- Y Axis Position -->
+				<div width="90%" height="60" style_pad_all="#unit_md" style_margin_bottom="#unit_sm">
+					<style name="style_dro_panel" />
+					<view flex_flow="row" width="100%" style_flex_main_place="space-between">
+						<lv_label text="Y:" style_text_color="#text_secondary" />
+						<lv_label text="$pos_y" style_text_color="#accent_color" />
+					</view>
+				</div>
+				
+				<!-- Z Axis Position -->
+				<div width="90%" height="60" style_pad_all="#unit_md" style_margin_bottom="#unit_sm">
+					<style name="style_dro_panel" />
+					<view flex_flow="row" width="100%" style_flex_main_place="space-between">
+						<lv_label text="Z:" style_text_color="#text_secondary" />
+						<lv_label text="$pos_z" style_text_color="#accent_color" />
+					</view>
+				</div>
+				
+			</view>
+		</div>
+		
+		<!-- Footer with controls -->
+		<div width="100%" height="80" style_pad_all="#unit_md">
+			<view flex_flow="row" width="100%" style_flex_main_place="space-around">
+				<lv_button width="100" height="50">
+					<style name="style_button_primary" />
+					<lv_label text="ZERO" align="center" />
+				</lv_button>
+				<lv_button width="100" height="50">
+					<style name="style_button_primary" />
+					<lv_label text="MACRO" align="center" />
+				</lv_button>
+			</view>
+		</div>
+		
+		<!-- Status bar -->
+		<div width="100%" height="30" style_bg_color="#secondary_bg">
+			<lv_label text="$status_message" align="center" style_text_color="#text_secondary" />
+		</div>
+	</view>
+</screen>

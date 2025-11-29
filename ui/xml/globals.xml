@@ -1,0 +1,100 @@
+<globals>
+	<api>
+		<!-- Public API enumerations -->
+		<enumdef name="PendantMode">
+			<value name="MODE_JOG" />
+			<value name="MODE_MACRO" />
+			<value name="MODE_SETUP" />
+		</enumdef>
+		
+		<enumdef name="AxisSelect">
+			<value name="AXIS_X" />
+			<value name="AXIS_Y" />
+			<value name="AXIS_Z" />
+			<value name="AXIS_A" />
+		</enumdef>
+	</api>
+
+	<consts>
+		<!-- Spacing units -->
+		<int name="unit_xs" value="4" />
+		<int name="unit_sm" value="8" />
+		<int name="unit_md" value="12" />
+		<int name="unit_lg" value="16" />
+		<int name="unit_xl" value="24" />
+		
+		<!-- Opacity values -->
+		<percentage name="opa_disabled" value="30%" />
+		<percentage name="opa_muted" value="60%" />
+		<percentage name="opa_full" value="100%" />
+
+		<!-- Color palette for CNC Pendant -->
+		<color name="primary_bg" value="0x1a1a1a" />
+		<color name="secondary_bg" value="0x2d2d2d" />
+		<color name="accent_color" value="0x00cc66" />
+		<color name="warning_color" value="0xff9900" />
+		<color name="danger_color" value="0xff3333" />
+		<color name="text_primary" value="0xffffff" />
+		<color name="text_secondary" value="0xcccccc" />
+		<color name="border_color" value="0x404040" />
+	</consts>
+
+	<styles>
+		<!-- Base styles -->
+		<style name="style_screen_base" 
+			   bg_color="#primary_bg" 
+			   text_color="#text_primary" />
+		
+		<style name="style_panel" 
+			   bg_color="#secondary_bg" 
+			   border_width="2" 
+			   border_color="#border_color" 
+			   radius="#unit_sm" 
+			   pad_all="#unit_md" />
+		
+		<style name="style_button_primary" 
+			   bg_color="#accent_color" 
+			   text_color="#text_primary" 
+			   radius="#unit_sm" 
+			   pad_all="#unit_md" />
+		
+		<style name="style_button_danger" 
+			   bg_color="#danger_color" 
+			   text_color="#text_primary" 
+			   radius="#unit_sm" 
+			   pad_all="#unit_md" />
+	</styles>
+
+	<subjects>
+		<!-- Current machine state (read-only from UI perspective) -->
+		<int name="current_mode" value="0" help="0:JOG, 1:MACRO, 2:SETUP" />
+		<int name="selected_axis" value="0" help="0:X, 1:Y, 2:Z, 3:A" />
+		<int name="jog_speed" value="50" min_value="1" max_value="100" help="Jog speed percentage" />
+		<int name="spindle_rpm" value="0" min_value="0" max_value="24000" help="Current spindle RPM" />
+		<int name="feed_override" value="100" min_value="10" max_value="200" help="Feed override percentage" />
+		
+		<!-- Position values (DRO - Digital Read Out) -->
+		<string name="pos_x" value="0.000" help="X axis position" />
+		<string name="pos_y" value="0.000" help="Y axis position" />
+		<string name="pos_z" value="0.000" help="Z axis position" />
+		<string name="pos_a" value="0.000" help="A axis position" />
+		
+		<!-- Machine status -->
+		<int name="machine_connected" value="0" help="0:disconnected, 1:connected" />
+		<string name="status_message" value="Ready" help="Status message to display" />
+	</subjects>
+
+	<images>
+		<!-- Placeholder for future icons -->
+		<!-- <file name="icon_jog" src_path="images/icon_jog.png" /> -->
+		<!-- <file name="icon_macro" src_path="images/icon_macro.png" /> -->
+		<!-- <file name="icon_setup" src_path="images/icon_setup.png" /> -->
+	</images>
+
+	<fonts>
+		<!-- Using LVGL built-in fonts for now -->
+		<!-- Can be extended with custom fonts later -->
+		<!-- <tiny_ttf name="roboto_16" size="16" as_file="true" src_path="fonts/Roboto-Regular.ttf" /> -->
+		<!-- <tiny_ttf name="roboto_bold_20" size="20" as_file="true" src_path="fonts/Roboto-Bold.ttf" /> -->
+	</fonts>
+</globals>
