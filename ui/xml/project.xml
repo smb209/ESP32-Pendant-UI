@@ -1,0 +1,7 @@
+<project name="cnc_pendant">
+	<targets>
+		<target name="esp32_s3_round_display">
+			<display width="480" height="480" />
+		</target>
+	</targets>
+</project>

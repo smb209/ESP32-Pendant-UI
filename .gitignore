@@ -1,0 +1,31 @@
+# PlatformIO
+.pio/
+.vscode/
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json
+
+# Build artifacts
+*.o
+*.elf
+*.bin
+*.map
+
+# IDE files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Temporary files
+/tmp/
+*.tmp
+*.bak
+*.log

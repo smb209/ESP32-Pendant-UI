@@ -1,0 +1,108 @@
+<screen name="setup">
+	<styles>
+		<style name="style_setting_row" 
+			   bg_color="#secondary_bg" 
+			   border_width="1" 
+			   border_color="#border_color" 
+			   radius="#unit_sm" 
+			   pad_all="#unit_md" 
+			   width="90%" 
+			   height="60" 
+			   margin_bottom="#unit_sm" />
+		
+		<style name="style_slider" 
+			   bg_color="#border_color" 
+			   bg_opa="#opa_muted" />
+		
+		<style name="style_slider_indicator" 
+			   bg_color="#accent_color" />
+	</styles>
+	
+	<view flex_flow="column" width="100%" height="100%">
+		<!-- Apply base screen style -->
+		<style name="style_screen_base" />
+		
+		<!-- Header -->
+		<div width="100%" height="60" style_pad_all="#unit_md">
+			<style name="style_panel" />
+			<lv_label text="SETTINGS" align="center" />
+		</div>
+		
+		<!-- Settings list -->
+		<div flex_grow="1" width="100%" style_pad_all="#unit_md">
+			<view flex_flow="column" width="100%" style_flex_cross_place="center">
+				
+				<!-- Jog Speed Setting -->
+				<div style_margin_bottom="#unit_md">
+					<style name="style_setting_row" />
+					<view flex_flow="column" width="100%">
+						<lv_label text="Jog Speed" style_text_color="#text_primary" />
+						<view flex_flow="row" width="100%" style_flex_main_place="space-between">
+							<lv_slider width="70%" style_bg_color="#border_color">
+								<style name="style_slider_indicator" selector="indicator" />
+							</lv_slider>
+							<lv_label text="50%" style_text_color="#accent_color" />
+						</view>
+					</view>
+				</div>
+				
+				<!-- Feed Override Setting -->
+				<div style_margin_bottom="#unit_md">
+					<style name="style_setting_row" />
+					<view flex_flow="column" width="100%">
+						<lv_label text="Feed Override" style_text_color="#text_primary" />
+						<view flex_flow="row" width="100%" style_flex_main_place="space-between">
+							<lv_slider width="70%" style_bg_color="#border_color">
+								<style name="style_slider_indicator" selector="indicator" />
+							</lv_slider>
+							<lv_label text="100%" style_text_color="#accent_color" />
+						</view>
+					</view>
+				</div>
+				
+				<!-- Display Brightness -->
+				<div style_margin_bottom="#unit_md">
+					<style name="style_setting_row" />
+					<view flex_flow="column" width="100%">
+						<lv_label text="Display Brightness" style_text_color="#text_primary" />
+						<view flex_flow="row" width="100%" style_flex_main_place="space-between">
+							<lv_slider width="70%" style_bg_color="#border_color">
+								<style name="style_slider_indicator" selector="indicator" />
+							</lv_slider>
+							<lv_label text="80%" style_text_color="#accent_color" />
+						</view>
+					</view>
+				</div>
+				
+				<!-- Connection Status -->
+				<div style_margin_bottom="#unit_md">
+					<style name="style_setting_row" />
+					<view flex_flow="row" width="100%" style_flex_main_place="space-between">
+						<lv_label text="Connection:" style_text_color="#text_primary" />
+						<lv_label text="Disconnected" style_text_color="#warning_color" />
+					</view>
+				</div>
+				
+			</view>
+		</div>
+		
+		<!-- Navigation footer -->
+		<div width="100%" height="80" style_pad_all="#unit_md">
+			<view flex_flow="row" width="100%" style_flex_main_place="space-around">
+				<lv_button width="120" height="50">
+					<style name="style_button_primary" />
+					<lv_label text="SAVE" align="center" />
+				</lv_button>
+				<lv_button width="120" height="50">
+					<style name="style_button_primary" />
+					<lv_label text="BACK" align="center" />
+				</lv_button>
+			</view>
+		</div>
+		
+		<!-- Status bar -->
+		<div width="100%" height="30" style_bg_color="#secondary_bg">
+			<lv_label text="$status_message" align="center" style_text_color="#text_secondary" />
+		</div>
+	</view>
+</screen>
