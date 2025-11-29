@@ -4,42 +4,33 @@
  * 
  * This file initializes the hardware (round touch LCD, rotary encoder)
  * and sets up LVGL for the UI. It contains no machine control logic.
+ * 
+ * Architecture improvements based on Knob18Meters reference:
+ * - Separated hardware drivers (display, touch, encoder)
+ * - Proper FreeRTOS task management for LVGL
+ * - Hardware-specific abstractions
  */
 
 #include <Arduino.h>
 #include "lvgl.h"
 #include "ui_api.h"
+#include "display_driver.h"
+#include "touch_driver.h"
+#include "encoder_driver.h"
 
 /*********************
  *      DEFINES
  *********************/
-#define LVGL_TICK_PERIOD_MS    5
-#define DISPLAY_WIDTH          480
-#define DISPLAY_HEIGHT         480
-
-/* Touch screen pins - adjust these for your hardware */
-#define TOUCH_CS_PIN           21
-#define TOUCH_IRQ_PIN          22
-
-/* Rotary encoder pins - adjust these for your hardware */
-#define ENCODER_CLK_PIN        32
-#define ENCODER_DT_PIN         33
-#define ENCODER_SW_PIN         25
-
-/* Display backlight - adjust for your hardware */
-#define BACKLIGHT_PIN          27
-#define BACKLIGHT_CHANNEL      0
-#define BACKLIGHT_FREQ         5000
-#define BACKLIGHT_RESOLUTION   8
+#define LVGL_TICK_PERIOD_MS    2
+#define LVGL_TASK_PRIORITY     2
+#define LVGL_TASK_STACK_SIZE   (4 * 1024)
 
 /**********************
  *  STATIC PROTOTYPES
  **********************/
 static void lvgl_tick_timer_cb(void);
-static void init_display(void);
-static void init_touch(void);
-static void init_encoder(void);
-static void encoder_read_task(void);
+static void lvgl_task(void *pvParameter);
+static void encoder_event_handler(int32_t diff, bool button_pressed);
 static void example_macro_callback(const char * macro_name);
 static void example_settings_save_callback(void);
 static void example_screen_change_callback(ui_screen_t screen);
@@ -47,16 +38,12 @@ static void example_screen_change_callback(ui_screen_t screen);
 /**********************
  *  STATIC VARIABLES
  **********************/
-static lv_disp_draw_buf_t draw_buf;
-static lv_color_t buf1[DISPLAY_WIDTH * 40];
-static lv_color_t buf2[DISPLAY_WIDTH * 40];
-
-static volatile int32_t encoder_position = 0;
-static volatile int32_t encoder_last_position = 0;
-static volatile bool encoder_button_pressed = false;
-
 /* Timer for LVGL tick */
 hw_timer_t * lvgl_tick_timer = NULL;
+
+/* Mutex for LVGL thread safety */
+static SemaphoreHandle_t lvgl_mutex = NULL;
+
 
 /**********************
  *      MACROS
@@ -69,33 +56,49 @@ hw_timer_t * lvgl_tick_timer = NULL;
 void setup()
 {
     Serial.begin(115200);
-    Serial.println("ESP32-S3 CNC Pendant UI Starting...");
-    
-    /* Initialize display backlight */
-    ledcSetup(BACKLIGHT_CHANNEL, BACKLIGHT_FREQ, BACKLIGHT_RESOLUTION);
-    ledcAttachPin(BACKLIGHT_PIN, BACKLIGHT_CHANNEL);
-    ledcWrite(BACKLIGHT_CHANNEL, 200); // 80% brightness
+    Serial.println("\n\n=== ESP32-S3 CNC Pendant UI Starting ===");
+    Serial.printf("Free heap: %d bytes\n", ESP.getFreeHeap());
     
     /* Initialize LVGL */
     lv_init();
+    Serial.println("LVGL initialized");
     
-    /* Initialize display */
-    init_display();
+    /* Create mutex for LVGL thread safety */
+    lvgl_mutex = xSemaphoreCreateMutex();
+    if (lvgl_mutex == NULL) {
+        Serial.println("ERROR: Failed to create LVGL mutex!");
+        return;
+    }
     
-    /* Initialize touch input */
-    init_touch();
+    /* Initialize display driver */
+    if (!display_driver_init()) {
+        Serial.println("ERROR: Display initialization failed!");
+        return;
+    }
+    
+    /* Initialize touch driver */
+    if (!touch_driver_init()) {
+        Serial.println("WARNING: Touch initialization failed, continuing anyway");
+    }
     
     /* Initialize rotary encoder */
-    init_encoder();
+    if (!encoder_driver_init()) {
+        Serial.println("ERROR: Encoder initialization failed!");
+        return;
+    }
+    
+    /* Set encoder event callback */
+    encoder_driver_set_callback(encoder_event_handler);
     
     /* Setup LVGL tick timer */
     lvgl_tick_timer = timerBegin(0, 80, true);
     timerAttachInterrupt(lvgl_tick_timer, &lvgl_tick_timer_cb, true);
     timerAlarmWrite(lvgl_tick_timer, LVGL_TICK_PERIOD_MS * 1000, true);
     timerAlarmEnable(lvgl_tick_timer);
+    Serial.println("LVGL timer initialized");
     
     /* Initialize UI system */
-    if(!ui_init()) {
+    if (!ui_init()) {
         Serial.println("ERROR: UI initialization failed!");
         return;
     }
@@ -109,20 +112,29 @@ void setup()
     ui_set_status_message("System ready");
     ui_set_connection_status(false);
     
-    Serial.println("UI Initialized Successfully!");
+    /* Create LVGL task */
+    xTaskCreatePinnedToCore(
+        lvgl_task,              /* Task function */
+        "LVGL",                 /* Task name */
+        LVGL_TASK_STACK_SIZE,   /* Stack size */
+        NULL,                   /* Parameters */
+        LVGL_TASK_PRIORITY,     /* Priority */
+        NULL,                   /* Task handle */
+        1                       /* Core 1 */
+    );
+    
+    Serial.println("=== UI Initialized Successfully! ===\n");
+    Serial.printf("Free heap after init: %d bytes\n", ESP.getFreeHeap());
 }
 
 void loop()
 {
-    /* Update LVGL */
-    ui_update(LVGL_TICK_PERIOD_MS);
-    
     /* Handle encoder input */
-    encoder_read_task();
+    encoder_driver_task();
     
     /* Example: Simulate position updates (remove in production) */
     static uint32_t last_update = 0;
-    if(millis() - last_update > 1000) {
+    if (millis() - last_update > 1000) {
         last_update = millis();
         
         /* This is just for demonstration - in a real application,
@@ -156,133 +168,41 @@ static void IRAM_ATTR lvgl_tick_timer_cb(void)
 }
 
 /**
- * Initialize the display
- * NOTE: This is a stub - implement according to your specific display hardware
+ * LVGL task handler (runs on Core 1)
+ * This task handles all LVGL operations in a thread-safe manner
  */
-static void init_display(void)
+static void lvgl_task(void *pvParameter)
 {
-    Serial.println("Initializing display...");
+    Serial.println("LVGL task started on core " + String(xPortGetCoreID()));
     
-    /* Initialize your display driver here */
-    /* Example for TFT_eSPI or similar:
-     * 
-     * tft.begin();
-     * tft.setRotation(0);
-     * tft.fillScreen(TFT_BLACK);
-     */
-    
-    /* Create LVGL display buffer */
-    lv_disp_draw_buf_init(&draw_buf, buf1, buf2, DISPLAY_WIDTH * 40);
-    
-    /* Create display driver */
-    static lv_disp_drv_t disp_drv;
-    lv_disp_drv_init(&disp_drv);
-    disp_drv.hor_res = DISPLAY_WIDTH;
-    disp_drv.ver_res = DISPLAY_HEIGHT;
-    disp_drv.draw_buf = &draw_buf;
-    
-    /* Set your display flush callback here */
-    /* disp_drv.flush_cb = my_disp_flush; */
-    
-    lv_disp_drv_register(&disp_drv);
-    
-    Serial.println("Display initialized");
-}
-
-/**
- * Initialize touch input
- * NOTE: This is a stub - implement according to your specific touch hardware
- */
-static void init_touch(void)
-{
-    Serial.println("Initializing touch input...");
-    
-    /* Initialize your touch driver here */
-    /* Example:
-     * 
-     * pinMode(TOUCH_CS_PIN, OUTPUT);
-     * pinMode(TOUCH_IRQ_PIN, INPUT);
-     * touch.begin();
-     */
-    
-    /* Create LVGL input device driver */
-    static lv_indev_drv_t indev_drv;
-    lv_indev_drv_init(&indev_drv);
-    indev_drv.type = LV_INDEV_TYPE_POINTER;
-    
-    /* Set your touch read callback here */
-    /* indev_drv.read_cb = my_touchpad_read; */
-    
-    lv_indev_drv_register(&indev_drv);
-    
-    Serial.println("Touch input initialized");
-}
-
-/**
- * Initialize rotary encoder
- */
-static void init_encoder(void)
-{
-    Serial.println("Initializing rotary encoder...");
-    
-    pinMode(ENCODER_CLK_PIN, INPUT_PULLUP);
-    pinMode(ENCODER_DT_PIN, INPUT_PULLUP);
-    pinMode(ENCODER_SW_PIN, INPUT_PULLUP);
-    
-    /* Create LVGL input device for encoder */
-    static lv_indev_drv_t indev_drv;
-    lv_indev_drv_init(&indev_drv);
-    indev_drv.type = LV_INDEV_TYPE_ENCODER;
-    
-    /* Set your encoder read callback here */
-    /* indev_drv.read_cb = my_encoder_read; */
-    
-    lv_indev_t * encoder_indev = lv_indev_drv_register(&indev_drv);
-    
-    /* Create a group for encoder navigation */
-    lv_group_t * g = lv_group_create();
-    lv_group_set_default(g);
-    lv_indev_set_group(encoder_indev, g);
-    
-    Serial.println("Rotary encoder initialized");
-}
-
-/**
- * Read encoder state and process input
- */
-static void encoder_read_task(void)
-{
-    static uint8_t last_clk = HIGH;
-    static uint32_t last_button_time = 0;
-    
-    /* Read encoder rotation */
-    uint8_t clk = digitalRead(ENCODER_CLK_PIN);
-    uint8_t dt = digitalRead(ENCODER_DT_PIN);
-    
-    if(clk != last_clk && clk == LOW) {
-        if(dt == HIGH) {
-            encoder_position++;
-        } else {
-            encoder_position--;
+    while (1) {
+        /* Lock LVGL mutex */
+        if (xSemaphoreTake(lvgl_mutex, portMAX_DELAY) == pdTRUE) {
+            /* Handle LVGL tasks */
+            lv_timer_handler();
+            
+            /* Release mutex */
+            xSemaphoreGive(lvgl_mutex);
         }
+        
+        /* Delay to allow other tasks to run */
+        vTaskDelay(pdMS_TO_TICKS(5));
     }
-    last_clk = clk;
-    
-    /* Check if encoder position changed */
-    if(encoder_position != encoder_last_position) {
-        int32_t delta = encoder_position - encoder_last_position;
-        encoder_last_position = encoder_position;
-        ui_encoder_input(delta);
+}
+
+/**
+ * Encoder event handler callback
+ */
+static void encoder_event_handler(int32_t diff, bool button_pressed)
+{
+    if (diff != 0) {
+        Serial.printf("Encoder: %+d\n", diff);
+        ui_encoder_input(diff);
     }
     
-    /* Read encoder button with debouncing */
-    if(digitalRead(ENCODER_SW_PIN) == LOW) {
-        if(millis() - last_button_time > 200) { // 200ms debounce
-            encoder_button_pressed = true;
-            last_button_time = millis();
-            ui_encoder_button_pressed();
-            Serial.println("Encoder button pressed");
-        }
+    if (button_pressed) {
+        Serial.println("Encoder button pressed");
+        ui_encoder_button_pressed();
     }
 }
 
