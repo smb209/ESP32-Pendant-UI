@@ -2,16 +2,16 @@
 	<api>
 		<!-- Public API enumerations -->
 		<enumdef name="PendantMode">
-			<value name="MODE_JOG" />
-			<value name="MODE_MACRO" />
-			<value name="MODE_SETUP" />
+			<enum name="MODE_JOG" />
+			<enum name="MODE_MACRO" />
+			<enum name="MODE_SETUP" />
 		</enumdef>
 		
 		<enumdef name="AxisSelect">
-			<value name="AXIS_X" />
-			<value name="AXIS_Y" />
-			<value name="AXIS_Z" />
-			<value name="AXIS_A" />
+			<enum name="AXIS_X" />
+			<enum name="AXIS_Y" />
+			<enum name="AXIS_Z" />
+			<enum name="AXIS_A" />
 		</enumdef>
 	</api>
 

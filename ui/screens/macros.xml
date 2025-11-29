@@ -1,4 +1,4 @@
-<screen name="macros">
+<screen>
 	<styles>
 		<style name="style_macro_button" 
 			   bg_color="#secondary_bg" 
@@ -18,17 +18,17 @@
 		<style name="style_screen_base" />
 		
 		<!-- Header -->
-		<div width="100%" height="60" style_pad_all="#unit_md">
+		<lv_obj width="100%" height="60" style_pad_all="#unit_md">
 			<style name="style_panel" />
 			<lv_label text="MACRO COMMANDS" align="center" />
-		</div>
+		</lv_obj>
 		
 		<!-- Macro buttons grid -->
-		<div flex_grow="1" width="100%" style_pad_all="#unit_lg">
-			<view flex_flow="column" width="100%" style_flex_cross_place="center" style_flex_main_place="space-around">
+		<lv_obj style_flex_grow="1" width="100%" style_pad_all="#unit_lg">
+			<lv_obj style_flex_flow="column" width="100%" style_flex_cross_place="center" style_flex_main_place="space_around">
 				
 				<!-- Row 1 -->
-				<view flex_flow="row" style_flex_main_place="space-around" width="100%">
+				<lv_obj style_flex_flow="row" style_flex_main_place="space_around" width="100%">
 					<lv_button>
 						<style name="style_macro_button" />
 						<style name="style_macro_button_pressed" selector="pressed" />
@@ -39,10 +39,10 @@
 						<style name="style_macro_button_pressed" selector="pressed" />
 						<lv_label text="HOME ALL" align="center" />
 					</lv_button>
-				</view>
+				</lv_obj>
 				
 				<!-- Row 2 -->
-				<view flex_flow="row" style_flex_main_place="space-around" width="100%">
+				<lv_obj style_flex_flow="row" style_flex_main_place="space_around" width="100%">
 					<lv_button>
 						<style name="style_macro_button" />
 						<style name="style_macro_button_pressed" selector="pressed" />
@@ -53,10 +53,10 @@
 						<style name="style_macro_button_pressed" selector="pressed" />
 						<lv_label text="ZERO Z" align="center" />
 					</lv_button>
-				</view>
+				</lv_obj>
 				
 				<!-- Row 3 -->
-				<view flex_flow="row" style_flex_main_place="space-around" width="100%">
+				<lv_obj style_flex_flow="row" style_flex_main_place="space_around" width="100%">
 					<lv_button>
 						<style name="style_macro_button" />
 						<style name="style_macro_button_pressed" selector="pressed" />
@@ -67,24 +67,24 @@
 						<style name="style_macro_button_pressed" selector="pressed" />
 						<lv_label text="UNLOCK" align="center" />
 					</lv_button>
-				</view>
+				</lv_obj>
 				
-			</view>
-		</div>
+			</lv_obj>
+		</lv_obj>
 		
 		<!-- Navigation footer -->
-		<div width="100%" height="80" style_pad_all="#unit_md">
-			<view flex_flow="row" width="100%" style_flex_main_place="space-around">
+		<lv_obj width="100%" height="80" style_pad_all="#unit_md">
+			<lv_obj style_flex_flow="row" width="100%" style_flex_main_place="space_around">
 				<lv_button width="120" height="50">
 					<style name="style_button_primary" />
 					<lv_label text="BACK" align="center" />
 				</lv_button>
-			</view>
-		</div>
+			</lv_obj>
+		</lv_obj>
 		
 		<!-- Status bar -->
-		<div width="100%" height="30" style_bg_color="#secondary_bg">
-			<lv_label text="$status_message" align="center" style_text_color="#text_secondary" />
-		</div>
+		<lv_obj width="100%" height="30" style_bg_color="#secondary_bg">
+			<lv_label bind_text="status_message" align="center" style_text_color="#text_secondary" />
+		</lv_obj>
 	</view>
 </screen>
