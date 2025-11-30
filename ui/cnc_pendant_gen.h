@@ -140,9 +140,7 @@ void cnc_pendant_init_gen(const char * asset_path);
  **********************/
 
 /*Include all the widget and components of this library*/
-#include "screens/macros_gen.h"
 #include "screens/main_gen.h"
-#include "screens/setup_gen.h"
 
 #ifdef __cplusplus
 } /*extern "C"*/
